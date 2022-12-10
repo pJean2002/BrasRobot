@@ -1,4 +1,7 @@
 {
     "sketch": "test.ino",
-    "output": "build"
+    "output": "build",
+    "board": "arduino:avr:uno",
+    "port": "/dev/ttyS0",
+    "programmer": "arduino:arduinoasispatmega32u4"
 }
