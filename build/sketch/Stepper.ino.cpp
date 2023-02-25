@@ -22,9 +22,9 @@ void setup()
 
 void loop()
 {
-	/*PasPas.step(2000);
+	PasPas.step(0);
     delay(1000);
-    PasPas.step(-2000);
-    delay(1000);*/
+    PasPas.step(0);
+    delay(1000);
 }
 
