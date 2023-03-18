@@ -11,3 +11,4 @@ Module Wifi :
     Fil Noir Ground
     Fil Jaune RX
     Fil Vert TX
+    IP : 192.168.0.180
