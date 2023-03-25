@@ -5,7 +5,7 @@ Liste des moteurs :
     Socle/épaule moteur pin 2-5,
     Coude moteur pin 3-6,
     Poignet moteur 4-7
-
+    IP : 192.168.0.180
 Module Wifi :
     Fil Rouge 3V3,
     Fil Noir Ground,
