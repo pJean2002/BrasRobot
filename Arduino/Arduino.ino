@@ -42,12 +42,10 @@ Stepper hauteur(200, 12, 13);
 
 void Init(void)
 {
-    Serial.begin(9600);
-    while (Serial.read() >= 0)
-    {
-        /*Vider le cache du port série...*/
-    }
-
+  pinMode(limit_socle, INPUT_PULLUP); 
+  pinMode(limit_hauteur, INPUT_PULLUP);  
+  pinMode(limit_coude, INPUT_PULLUP); 
+  pinMode(limit_pince, INPUT_PULLUP); 
     /* initialiser les périphériques
     bool res_error = true;
     DriverMotor.Motor_Init();
@@ -224,9 +222,27 @@ void SerialPortMsgProcessing(String jsonMsg)
   }
 }
 
+void Display_LimitSwitch()
+{
+  char buf[64];
+  sprintf(buf, "{\"msg\":\"limit socle: %d\"}", digitalRead(limit_socle));
+  Serial.println(buf);
+  sprintf(buf, "{\"msg\":\"limit hauteur: %d\"}", digitalRead(limit_hauteur));
+  Serial.println(buf);
+  sprintf(buf, "{\"msg\":\"limit coude: %d\"}", digitalRead(limit_coude));
+  Serial.println(buf);
+  sprintf(buf, "{\"msg\":\"limit rot pince: %d\"}", digitalRead(limit_pince));
+  Serial.println(buf);
+  
+}
+
 void setup() {
-  // set the speed at 60 rpm:
-  Init(); // Init all sensors + serial communication
+    Serial.begin(9600);
+    while (Serial.read() >= 0)
+    {
+        /*Vider le cache du port série...*/
+    }
+  Init(); // Init all sensors 
 /*
   #if defined(DEBUG)
       Serial.println();
@@ -237,37 +253,38 @@ void setup() {
   #endif
   */
   Serial.println("");
-  pinMode(limit_socle, INPUT_PULLUP); 
-  pinMode(limit_hauteur, INPUT_PULLUP);  
-  pinMode(limit_coude, INPUT_PULLUP); 
-  pinMode(limit_pince, INPUT_PULLUP); 
+  Display_LimitSwitch();
   socle.setSpeed(500);
   coude.setSpeed(500);
   rot_pince.setSpeed(500);
   hauteur.setSpeed(1500);
 
   
-  Serial.print("limit socle: ");Serial.println(digitalRead(limit_socle));
-  Serial.print("limit hauteur: ");Serial.println(digitalRead(limit_hauteur));
-  Serial.print("limit coude: ");Serial.println(digitalRead(limit_coude));
-  Serial.print("limit rot pince: ");Serial.println(digitalRead(limit_pince));
+ 
 
   Serial.println("init socle");
   while (digitalRead(limit_socle) !=1){
    socle.step(-200);
-  }   
+  } 
+  Display_LimitSwitch(); 
+
   Serial.println("init coude");
   while (digitalRead(limit_coude) !=1){
    coude.step(-200);
-  }    
+  }   
+  Display_LimitSwitch();
+
   Serial.println("init pince");
   while (digitalRead(limit_pince) !=1){
    rot_pince.step(-200);
-  }      
+  }  
+  Display_LimitSwitch(); 
+     
   Serial.println("init hauteur");
   while (digitalRead(limit_hauteur) !=1){
    hauteur.step(+200);
   }   
+  Display_LimitSwitch();
  }
 
 void loop() {
