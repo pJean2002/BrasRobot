@@ -237,6 +237,14 @@ void Display_LimitSwitch()
 }
 
 void setup() {
+
+  Serial.println("{\"msg\" : \"============================================================================\"}");
+  Serial.println("{\"msg\" : \"Programme de contrôle du Bras Robot selon une commande reçue en wifi\"}");
+  Serial.println("{\"msg\" : \"Date de création : 25/03/2023\"}");
+  Serial.println("{\"msg\" : \"Date de modification : 25/03/2023\"}");
+  Serial.println("{\"msg\" : \"Modification effectuée : \"}");
+  Serial.println("{\"msg\" : \"Auteur : Groupe\"}");  
+  Serial.println("{\"msg\" : \"============================================================================\"}");
     Serial.begin(9600);
     while (Serial.read() >= 0)
     {
