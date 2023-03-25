@@ -1,7 +1,6 @@
 {
-    "sketch": "Stepper.ino",
+    "sketch": "test.ino",
     "output": "build",
     "board": "arduino:avr:uno",
-    "port": "/dev/ttyACM0",
-    "programmer": "arduino:arduinoasispatmega32u4"
+    "port": "/dev/ttyACM0"
 }
