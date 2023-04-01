@@ -1,9 +1,12 @@
 #include <Stepper.h>
+#include <Servo.h>
 
 #define limitSwitch1 11
 #define limitSwitch2 10
 #define limitSwitch3 9
 #define limitSwitch4 A3
+
+Servo Pince;
 
 Stepper Hauteur = Stepper(200,12,13);
 Stepper Epaule = Stepper(200,2,5);
@@ -17,11 +20,20 @@ void setup()
     Epaule.setSpeed(2000);
     Coude.setSpeed(2000);
     Poignet.setSpeed(2000);
+    Pince.attach(A0);
 
     homing();
 }
 
-void loop(){}
+void loop()
+{
+    Pince.write(0);
+    Serial.println("Sens1");
+    delay(5000);
+    Pince.write(180);
+    Serial.println("Sens2");
+    delay(5000);
+}
 
 void homing()
 {

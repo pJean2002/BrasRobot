@@ -1,5 +1,5 @@
 {
-    "sketch": "Tests/ServoPince/ServoPince.ino",
+    "sketch": "Arduino/Arduino.ino",
     "output": "build",
     "board": "arduino:avr:uno",
     "port": "/dev/ttyACM0"

@@ -5,19 +5,20 @@
 
 #include <Servo.h>
 
-Servo Pince
+Servo Pince;
 
 void setup()
 {
+    Serial.begin(115200);
     Pince.attach(A0);
 }
 
 void loop()
 {
-    Pince.write(10);
-    delay(2000)
-    Pince.write(170);
-    delay(2000);
-    Pince.write(90);
-    Pince.detach();
+    Pince.write(0);
+    Serial.println("Sens1");
+    delay(5000);
+    Pince.write(180);
+    Serial.println("Sens2");
+    delay(5000);
 }

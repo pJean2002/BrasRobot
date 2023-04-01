@@ -1,0 +1,32 @@
+[
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "/home/equipe2/.arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino"
+  },
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "/home/equipe2/.arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard"
+  },
+  {
+    "Sourcefile": "/home/equipe2/BrasRobot/build/sketch/Arduino.ino.cpp",
+    "Include": "Stepper.h",
+    "Includepath": "/home/equipe2/Arduino/libraries/Stepper/src"
+  },
+  {
+    "Sourcefile": "/home/equipe2/BrasRobot/build/sketch/Arduino.ino.cpp",
+    "Include": "ArduinoJson.h",
+    "Includepath": "/home/equipe2/Arduino/libraries/ArduinoJson/src"
+  },
+  {
+    "Sourcefile": "/home/equipe2/BrasRobot/build/sketch/Arduino.ino.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "/home/equipe2/Arduino/libraries/Stepper/src/Stepper.cpp",
+    "Include": "",
+    "Includepath": null
+  }
+]

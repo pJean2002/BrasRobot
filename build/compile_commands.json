@@ -1,1 +1,66 @@
-[]
+[
+ {
+  "directory": "/home/equipe2/BrasRobot",
+  "arguments": [
+   "/home/equipe2/.arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++",
+   "-c",
+   "-g",
+   "-Os",
+   "-w",
+   "-std=gnu++11",
+   "-fpermissive",
+   "-fno-exceptions",
+   "-ffunction-sections",
+   "-fdata-sections",
+   "-fno-threadsafe-statics",
+   "-Wno-error=narrowing",
+   "-MMD",
+   "-flto",
+   "-mmcu=atmega328p",
+   "-DF_CPU=16000000L",
+   "-DARDUINO=10607",
+   "-DARDUINO_AVR_UNO",
+   "-DARDUINO_ARCH_AVR",
+   "-I/home/equipe2/.arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
+   "-I/home/equipe2/.arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
+   "-I/home/equipe2/Arduino/libraries/Stepper/src",
+   "-I/home/equipe2/Arduino/libraries/ArduinoJson/src",
+   "/home/equipe2/BrasRobot/build/sketch/Arduino.ino.cpp",
+   "-o",
+   "/home/equipe2/BrasRobot/build/sketch/Arduino.ino.cpp.o"
+  ],
+  "file": "/home/equipe2/BrasRobot/build/sketch/Arduino.ino.cpp"
+ },
+ {
+  "directory": "/home/equipe2/BrasRobot",
+  "arguments": [
+   "/home/equipe2/.arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++",
+   "-c",
+   "-g",
+   "-Os",
+   "-w",
+   "-std=gnu++11",
+   "-fpermissive",
+   "-fno-exceptions",
+   "-ffunction-sections",
+   "-fdata-sections",
+   "-fno-threadsafe-statics",
+   "-Wno-error=narrowing",
+   "-MMD",
+   "-flto",
+   "-mmcu=atmega328p",
+   "-DF_CPU=16000000L",
+   "-DARDUINO=10607",
+   "-DARDUINO_AVR_UNO",
+   "-DARDUINO_ARCH_AVR",
+   "-I/home/equipe2/.arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
+   "-I/home/equipe2/.arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
+   "-I/home/equipe2/Arduino/libraries/Stepper/src",
+   "-I/home/equipe2/Arduino/libraries/ArduinoJson/src",
+   "/home/equipe2/Arduino/libraries/Stepper/src/Stepper.cpp",
+   "-o",
+   "/home/equipe2/BrasRobot/build/libraries/Stepper/Stepper.cpp.o"
+  ],
+  "file": "/home/equipe2/Arduino/libraries/Stepper/src/Stepper.cpp"
+ }
+]
