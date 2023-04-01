@@ -26,6 +26,10 @@ const char* appVersion = "1.01";
 static String SerialMsgReceived = "";
 
 #define DEBUG
+#define stepper_socle 0
+#define stepper_hauteur 1
+#define stepper_coude 2
+#define stepper_rot_pince 3
 
 #define limit_socle 11
 #define limit_hauteur 10
@@ -105,6 +109,42 @@ String SerialPortJsonReception()
   //Serial.print("Returned value:"); Serial.println(result);
   return result;
 }
+//------Commande moteur--------------------------------------
+//paramètre motor: socle=0,hauteur=1,coude=2,rot_pince=3
+//r = nombre de tours
+//s = sens en 1 ou -1
+void cmdStepper(int motor, int r,int s)
+{
+  switch (motor){
+    case stepper_socle:
+      while ((digitalRead(limit_socle) !=1) && (r>0)){
+        socle.step(s*200);
+        r--;
+      } 
+      break;
+
+    case stepper_hauteur:
+      while ((digitalRead(limit_hauteur) !=1) && (r>0)){
+        hauteur.step(s*200);
+        r--;
+      } 
+      break;
+
+    case stepper_coude:
+      while ((digitalRead(limit_coude) !=1) && (r>0)){
+        coude.step(s*200);
+        r--;
+      } 
+      break;
+      
+    case stepper_rot_pince:
+      while ((digitalRead(limit_pince) !=1) && (r>0)){
+        rot_pince.step(s*200);
+        r--;
+      } 
+      break;
+  }
+}
 
 //
 // Process json message received from Serial
@@ -126,14 +166,26 @@ void SerialPortMsgProcessing(String jsonMsg)
       if(doc["d1"] != 0) {
           socle.step(doc["d1"]);
       }
-      if(doc["d1"] == "ultrason") {
-        if(doc["d2"] == "true") {
-          Serial.println("Ultrasonic_enabled = true;");
-          //Ultrasonic_enabled = true;
-        } else {
-          Serial.println("Ultrasonic_enabled = false;");
-          //Ultrasonic_enabled = false;
-        }
+    }
+    //----- cmd socle ---------
+    if(doc["cmd"] == "co")
+    {
+      if(doc["d1"] != 0) {
+        socle.step(doc["d1"]);
+      }
+    }
+    
+    else if(doc["cmd"] == "haut")
+    {
+     if(doc["d1"] != 0) {
+        socle.step(doc["d1"]);
+      }
+    }
+    
+    else if(doc["cmd"] == "pince")
+    {
+      if(doc["d1"] != 0) {
+        socle.step(doc["d1"]);
       }
     }
     else if(doc["cmd"] == "get")
