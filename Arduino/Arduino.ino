@@ -21,7 +21,7 @@
 // Version
 const char* applicationName = "iot_library";
 const char* filename = "iot_device.ino";
-const char* appVersion = "1.00";
+const char* appVersion = "1.01";
 
 static String SerialMsgReceived = "";
 
@@ -121,18 +121,10 @@ void SerialPortMsgProcessing(String jsonMsg)
     //char *cmdReceived = doc["cmd"];
     //char *temp = doc["H"];
     //CommandSerialNumber = temp; // Obtient le numéro de séquence de la nouvelle commande
-    if(doc["cmd"] == "")
+    if(doc["cmd"] == "so")
     {
-      if(doc["d1"] == "time") {
-        /*strcpy(currentDateTime, doc["d2"]);
-        Serial.println(currentDateTime); // Debug logging
-        hh = atoi(&currentDateTime[11]);
-        mm = atoi(&currentDateTime[14]);
-        ss = atoi(&currentDateTime[17]);
-        //Serial.println(hh);
-        //Serial.println(mm);
-        //Serial.println(ss);
-        */
+      if(doc["d1"] != 0) {
+          socle.step(doc["d1"]);
       }
       if(doc["d1"] == "ultrason") {
         if(doc["d2"] == "true") {
@@ -316,5 +308,3 @@ void loop() {
         SerialPortMsgProcessing(SerialMsgReceived);
     }
 }
-
-
