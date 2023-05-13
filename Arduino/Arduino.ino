@@ -163,14 +163,7 @@ void SerialPortMsgProcessing(String jsonMsg)
       //tankStatus.Functional_Mode = CMD_ServoControl; 
       //CMD_ServoSelection = doc["d1"];
       //CMD_Servo_angle = doc["d2"];
-      Serial.println("$ok");
-    }
-    else if(doc["cmd"] == "s2")
-    {
-      uint8_t temp_Set_Servo = doc["d1"];
-      Serial.println(temp_Set_Servo);
-      Serial.println("$ok");
-      //ServoStepMove(temp_Set_Servo);
+      Serial.println("{\"log\" : \" Commande de pince recue\"}");
     }
     else if(doc["cmd"] == "m1")
     {
@@ -178,8 +171,32 @@ void SerialPortMsgProcessing(String jsonMsg)
       //CMD_MotorSelection = doc["d1"];
       //CMD_MotorSpeed = doc["d2"];
       //CMD_MotorDirection = doc["d3"];
-      Serial.println("$ok");
-    } 
+      Serial.println("{\"log\" : \" Commande de moteur de coude recue\"}");
+    }
+    else if(doc["cmd"] == "m2")
+    {
+      //tankStatus.Functional_Mode = CMD_MotorControl; 
+      //CMD_MotorSelection = doc["d1"];
+      //CMD_MotorSpeed = doc["d2"];
+      //CMD_MotorDirection = doc["d3"];
+      Serial.println("{\"log\" : \" Commande de moteur de poignet recue\"}");
+    }
+    else if(doc["cmd"] == "m3")
+    {
+      //tankStatus.Functional_Mode = CMD_MotorControl; 
+      //CMD_MotorSelection = doc["d1"];
+      //CMD_MotorSpeed = doc["d2"];
+      //CMD_MotorDirection = doc["d3"];
+      Serial.println("{\"log\" : \" Commande de moteur d'axe Z recue\"}");
+    }
+    else if(doc["cmd"] == "m4")
+    {
+      //tankStatus.Functional_Mode = CMD_MotorControl; 
+      //CMD_MotorSelection = doc["d1"];
+      //CMD_MotorSpeed = doc["d2"];
+      //CMD_MotorDirection = doc["d3"];
+      Serial.println("{\"log\" : \" Commande de moteur d'epaule recue\"}");
+    }  
     else if(doc["cmd"] == "led")
     {
       //CMD_ledMode = doc["d1"];
