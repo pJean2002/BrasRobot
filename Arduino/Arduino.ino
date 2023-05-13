@@ -237,15 +237,15 @@ void Display_LimitSwitch()
 }
 
 void setup() {
-
+  Serial.begin(9600);
   Serial.println("{\"msg\" : \"============================================================================\"}");
-  Serial.println("{\"msg\" : \"Programme de contrôle du Bras Robot selon une commande reçue en wifi\"}");
-  Serial.println("{\"msg\" : \"Date de création : 25/03/2023\"}");
-  Serial.println("{\"msg\" : \"Date de modification : 25/03/2023\"}");
-  Serial.println("{\"msg\" : \"Modification effectuée : \"}");
+  Serial.println("{\"msg\" : \"Programme de controle du Bras Robot selon une commande recue en wifi\"}");
+  Serial.println("{\"msg\" : \"Date de creation : 25/03/2023\"}");
+  Serial.println("{\"msg\" : \"Date de modification : 13/05/2023\"}");
+  Serial.println("{\"msg\" : \"Modification effectuee : \"}");
   Serial.println("{\"msg\" : \"Auteur : Groupe\"}");  
   Serial.println("{\"msg\" : \"============================================================================\"}");
-    Serial.begin(9600);
+    
     while (Serial.read() >= 0)
     {
         /*Vider le cache du port série...*/
@@ -308,11 +308,12 @@ void loop() {
   delay(1000);
   */
     SerialMsgReceived = SerialPortJsonReception();  // Read incoming command from serial port
-    #if defined(DEBUG)
-        Serial.print("to be processed:"); Serial.println(SerialMsgReceived);
-    #endif
+   
     
-    if (SerialMsgReceived.length() > 0) {
+    if (SerialMsgReceived.length() > 0) { 
+      #if defined(DEBUG)
+        Serial.print("to be processed:"); Serial.println(SerialMsgReceived);
+      #endif
         SerialPortMsgProcessing(SerialMsgReceived);
     }
 }

@@ -8,10 +8,10 @@
 
 Servo Pince;
 
-Stepper Hauteur = Stepper(200,12,13);
-Stepper Epaule = Stepper(200,2,5);
-Stepper Coude = Stepper(200,3,6);
-Stepper Poignet = Stepper(200,4,7);
+Stepper Hauteur = Stepper(200, 12, 13);
+Stepper Epaule = Stepper(200, 2, 5);
+Stepper Coude = Stepper(200, 3, 6);
+Stepper Poignet = Stepper(200, 4, 7);
 
 void setup()
 {
@@ -38,7 +38,7 @@ void loop()
 void homing()
 {
     // Homing Stepper4
-    while (digitalRead(limitSwitch4) != 1) 
+    while (digitalRead(limitSwitch4) != 1)
     {
         stepper4.setSpeed(1500);
         stepper4.runSpeed();
@@ -46,13 +46,13 @@ void homing()
     }
     delay(20);
     stepper4.moveTo(10000);
-    while (stepper4.currentPosition() != 10000) 
+    while (stepper4.currentPosition() != 10000)
     {
         stepper4.run();
     }
 
     // Homing Stepper3
-    while (digitalRead(limitSwitch3) != 1) 
+    while (digitalRead(limitSwitch3) != 1)
     {
         stepper3.setSpeed(-1100);
         stepper3.runSpeed();
@@ -61,13 +61,13 @@ void homing()
     delay(20);
 
     stepper3.moveTo(0);
-    while (stepper3.currentPosition() != 0) 
+    while (stepper3.currentPosition() != 0)
     {
         stepper3.run();
     }
 
     // Homing Stepper2
-    while (digitalRead(limitSwitch2) != 1) 
+    while (digitalRead(limitSwitch2) != 1)
     {
         stepper2.setSpeed(-1300);
         stepper2.runSpeed();
@@ -76,13 +76,13 @@ void homing()
     delay(20);
 
     stepper2.moveTo(0);
-    while (stepper2.currentPosition() != 0) 
+    while (stepper2.currentPosition() != 0)
     {
         stepper2.run();
     }
 
     // Homing Stepper1
-    while (digitalRead(limitSwitch1) != 1) 
+    while (digitalRead(limitSwitch1) != 1)
     {
         stepper1.setSpeed(-1200);
         stepper1.runSpeed();
@@ -90,7 +90,7 @@ void homing()
     }
     delay(20);
     stepper1.moveTo(0);
-    while (stepper1.currentPosition() != 0) 
+    while (stepper1.currentPosition() != 0)
     {
         stepper1.run();
     }
