@@ -1,344 +1,394 @@
-# 1 "/home/equipe2/BrasRobot/Arduino/Arduino.ino"
-
+# 1 "/home/equipe2/BrasRobot/ESP01/ESP01.ino"
 /*
- Stepper Motor Control - one revolution
+  Code uploaded to ESP8266
+  Tools -> Board -> ESP8266 Boards
+  COM19 115200 Bauds
 
- This program drives a unipolar or bipolar stepper motor.
- The motor is attached to digital pins 8 - 11 of the Arduino.
+  Libraries:
+    LegoPowerFunction: https://drive.google.com/file/d/0B8Bxk35bJ4FPZ3lJNV95M1lVa2c/view?resourcekey=0-J2fHcSlB5B2shtvGF4VTjg
+    PubSubClient:https://pubsubclient.knolleary.net/
+    ESP8266WiFi & ESP8266WiFiMulti enabled if ESP8266 Boards selected
+      source https://github.com/esp8266/Arduino/tree/master/libraries/ESP8266WiFi/src
+    ArduinoJson: standard library https://arduinojson.org/
+    LedFlasher: tutorial https://www.forward.com.au/pfod/ArduinoProgramming/TimingDelaysInArduino.html
 
- The motor should revolve one revolution in one direction, then
- one revolution in the other direction.
+  Note:
+    Wifi communication: WifiClient + PubSubClient
+    UART serial communication: Serial.xxxx
+*/
+
+// Test = true ==> Debug and test messages are sent to Serial --> PC usb
+// Test = false ==> Serial send message to Arduino. No test/debug message sent to Arduino
+
+# 23 "/home/equipe2/BrasRobot/ESP01/ESP01.ino" 2
+# 24 "/home/equipe2/BrasRobot/ESP01/ESP01.ino" 2
+# 25 "/home/equipe2/BrasRobot/ESP01/ESP01.ino" 2
+# 26 "/home/equipe2/BrasRobot/ESP01/ESP01.ino" 2
+//#include "ledflasher.h"
 
 
- Created 11 Mar. 2007
- Modified 30 Nov. 2009
- by Tom Igoe
-
- */
-
-# 19 "/home/equipe2/BrasRobot/Arduino/Arduino.ino" 2
-# 20 "/home/equipe2/BrasRobot/Arduino/Arduino.ino" 2
 
 // Version
-const char* applicationName = "iot_library";
-const char* filename = "iot_device.ino";
-const char* appVersion = "1.00";
-
-static String SerialMsgReceived = "";
+const char* applicationName = "Bras_robot_ESP01";
+const char* filename = "Bras_robot_ESP01";
+const char* appVersion = "1.1";
 
 
+// Connect to multiple Wifi
+const char* ssid[] = {"TP-Link_04AC", "Bbox-B49AD598", "?=+haut"};
+const char* password[] = {"12806591", "AneRTVjnNTvaJNz6fY", "?=+GrandEstSIR"};
+const int wifi_count = 3;
+ESP8266WiFiMulti WiFiMulti;
 
-
-
-
-
-const int Tour_10 = 32000; // change this to fit the number of steps per revolution
-// for your motor
-
-// initialize the stepper library on pins 8 through 11:
-Stepper socle(200, 2, 5);
-Stepper coude(200, 3, 6);
-Stepper rot_pince(200, 4, 7);
-Stepper hauteur(200, 12, 13);
-
-void Init(void)
+void wifi_connect(bool debug=false)
 {
-  pinMode(11, 0x2);
-  pinMode(10, 0x2);
-  pinMode(9, 0x2);
-  pinMode(A3, 0x2);
-    /* initialiser les périphériques
-    bool res_error = true;
-    DriverMotor.Motor_Init();
-    DriverServo.Servo_Init(90);
-    DriverVoltage.Voltage_Init();
-    DriverUltrasonic.Ultrasonic_Init();
-    DriverLedRGB.Init(20);
-    byte status = TankMPU6050.Init(); // return init status. If status != 0 then MPU6050 ko
-    if(status!=0) {
-        Serial.println("MPU6050 Init error");
-    }
+  Serial.print("Wait for WiFi");
+  if(debug) Serial.setDebugOutput(true);
+  WiFi.mode(WIFI_STA); // Station mode
+  for (int i = 0; i < wifi_count; i++) {
+    WiFiMulti.addAP(ssid[i], password[i]);
+  }
 
-    tankStatus.Functional_Mode = Standby_mode;
-    */
+  while (WiFiMulti.run() != WL_CONNECTED) {
+      Serial.print(".");
+      delay(500);
+      if(debug) WiFi.printDiag(Serial); // for troubleshooting purpose
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
 }
 
-/* ====================================================================================
-Serial port data read 
-  - read data received from ESP32 (json format expected)
-  - Deserialize json data received 
-  - Execute received command
-*/
-static String SerialPortBuffer = "";
-static uint8_t openedBracket = 0;
-static bool jsonStarted = false;
+// MQTT Broker
+const char *mqtt_broker = "192.168.0.152"; // Enter your WiFi or Ethernet IP (192.168.1.87 = Ip du laptop LeNovo)
+                          const char *topic_data = "BR/status";
+                          const char *topic_cmd = "BR/cmd";
+                          const char *topic_err = "BR/error";
+                          const char *topic_msg = "BR/msg";
+                          const char *topic_esp01 = "BR/esp01";
 
-String SerialPortJsonReception()
+                          const int mqtt_port = 1883;
+                          WiFiClient espClient;
+                          PubSubClient client(espClient);
+
+                          // Buffer for json message received from Arduino (serial)
+
+char msgBuffer[(512)];
+
+// Led mnagement
+//#define LED_PIN 2                    // GPIO2 for ESP-01S
+//LEDFlasher flasher;
+
+/* ------ Wifi connection --------------------------*/
+// Return true : connected to Wifi
+//        false: not connected to Wifi
+bool connect2Wifi(char *SSID, char *pwd)
 {
-  char c;
-  String result = "";
+  Serial.print("Connecting to "); Serial.println(SSID);
+  WiFi.begin(SSID, pwd);
+  int count = 0;
+
+  while ((WiFi.status() != WL_CONNECTED) && (count < 20)) {
+    delay(500);
+    Serial.print(((reinterpret_cast<const __FlashStringHelper *>(
+# 94 "/home/equipe2/BrasRobot/ESP01/ESP01.ino" 3
+                (__extension__({static const char __pstr__[] __attribute__((__aligned__(4))) __attribute__((section( "\".irom0.pstr." "ESP01.ino" "." "94" "." "21" "\", \"aSM\", @progbits, 1 #"))) = (
+# 94 "/home/equipe2/BrasRobot/ESP01/ESP01.ino"
+                "."
+# 94 "/home/equipe2/BrasRobot/ESP01/ESP01.ino" 3
+                ); &__pstr__[0];}))
+# 94 "/home/equipe2/BrasRobot/ESP01/ESP01.ino"
+                ))));
+    count++;
+  }
+  return WiFi.status() == WL_CONNECTED;
+}
+
+//============ MQTT function =======================================================
+void reconnect_MQTT() {
+  while (!client.connected()) {
+    // client_id += String(WiFi.macAddress());
+    // String clientId = "ESP8266Client-";
+    // clientId += String(random(0xffff), HEX);
+
+    if (true) {
+      Serial.printf("Client %s connecting to mosquitto mqtt broker...\n", "Bras_robot-ESP01");
+    }
+
+    if (client.connect("Bras_robot-ESP01")) {
+
+      // publish and subscribe
+      client.publish(topic_esp01, "Hello From Lego Station 01 (ESP-01)");
+      //client.subscribe(topic_data); // ben non sinon on reçoit tous les messages envoyés
+      client.subscribe(topic_cmd);
+      //      if(TEST) {
+      //        Serial.println("Connected to MQTT broker");
+      //        Serial.print("Subscribe to "); Serial.println(topic_cmd);
+      //      }
+    } else {
+      //      if(TEST) {
+      //        Serial.print("failed with state ");
+      //        Serial.println(client.state());
+      //      }
+      delay(2000);
+    }
+  }
+}
+
+// ==============================================================
+// MQTT message received and forwarded to Arduino
+//
+void callback(char *topic, byte * payload, unsigned int length) {
+  if (true) {
+    //client.publish(topic_esp01, "Message received with topic: ");
+    //client.publish(topic_esp01, topic);
+    //    client.publish(topic_esp01,"Message:"));
+  }
+
+  // Forward to Arduino
+  for (int i = 0; i < length; i++) {
+    Serial.print((char) payload[i]);
+  }
+
+  Serial.println();
+  client.publish(topic_esp01, "forwarded");
+}
+
+
+// ==============================================================
+// Receiving message from Arduino
+// Global var used by GetJsonMsgFromArduino
+uint8_t openedBracket;
+bool jsonStarted;
+//static char readBuff[512] = "";
+
+//
+// Read json message fromo serial port (Arduino)
+// Return true when message is completed
+//        false when no message or incompleted message
+//
+String stringBuffer = "";
+bool GetJsonMsgFromArduino(void)
+{
+  bool result = false;
   if (Serial.available() > 0)
   {
-    do {
-      c = Serial.read();
-      Serial.print(c); // echo
-      SerialPortBuffer += c;
-      switch(c) {
-        case '{':
-          openedBracket++;
-          jsonStarted = true;
-          break;
-        case '}':
-          openedBracket--;
-          break;
-      }
-    } while((jsonStarted || openedBracket >= 0) && Serial.available() > 0);
-  }
 
-  if (jsonStarted && (openedBracket == 0)) // End of message received
-  {
-    //Serial.println("end of received message");
-    result = SerialPortBuffer;
-    SerialPortBuffer = "";
-    openedBracket = 0;
-    jsonStarted = false; // Reset message reception
+    do {
+      uint8_t c = Serial.read();
+      if (!jsonStarted && (c == '{')) {
+        stringBuffer = ""; // Clear buffer
+        stringBuffer += (char)c;
+        jsonStarted = true;
+        openedBracket++;
+
+      } else {
+        stringBuffer += (char)c; // json already started
+
+        switch (c) {
+          case '{':
+            openedBracket++;
+            break;
+          case '}':
+            openedBracket--;
+            break;
+        }
+      }
+    } while ((jsonStarted || openedBracket >= 0) && Serial.available() > 0);
+
+    // End of json message from arduino ??
+    if (jsonStarted && (openedBracket == 0))
+    {
+      stringBuffer.toCharArray(msgBuffer, (512));
+      client.publish(topic_msg, msgBuffer);
+      result = true; // json message completed
+      openedBracket = 0;
+      jsonStarted = false;
+      stringBuffer = "";
+    }
   }
-  //Serial.print("Returned value:"); Serial.println(result);
   return result;
 }
 
-//
-// Process json message received from Serial
-//
-void SerialPortMsgProcessing(String jsonMsg)
-{
-  char msg[64];
-  //Serial.println("SerialPortMsgProcessing");
-  StaticJsonDocument<200> doc;
-  DeserializationError error = deserializeJson(doc, jsonMsg);
 
-  if (!error) // Vérifier que la désérialisation a réussi
-  {
-    //char *cmdReceived = doc["cmd"];
-    //char *temp = doc["H"];
-    //CommandSerialNumber = temp; // Obtient le numéro de séquence de la nouvelle commande
-    if(doc["cmd"] == "")
+void ProcessJsonMsgFromArduino(char* jsonMsg)
+{
+  client.publish(topic_msg, jsonMsg);
+  /*
+    //Serial.println(F("[start processing msg...]"));
+    if (true == jsonMsg.equals("{BT_detection}"))
     {
-      if(doc["d1"] == "time") {
-        /*strcpy(currentDateTime, doc["d2"]);
-        Serial.println(currentDateTime); // Debug logging
-        hh = atoi(&currentDateTime[11]);
-        mm = atoi(&currentDateTime[14]);
-        ss = atoi(&currentDateTime[17]);
-        //Serial.println(hh);
-        //Serial.println(mm);
-        //Serial.println(ss);
-        */
+    Serial.print("{BT_OK}");
+    //Serial.println("Factory...");
+    } else {
+    // Deserialize to get the command type
+    StaticJsonDocument<256> doc;
+    DeserializationError err = deserializeJson(doc, jsonMsg);
+    if (err) {
+      Serial.print(F("deserializeJson failed: "));
+      Serial.println(err.c_str());
+      Serial.println(jsonMsg);
+    } else {
+      // is it a get time command from Arduino ?
+      // {"cmd":"get","d1":"time"}
+      if ((doc["cmd"] == "get") && (doc["d1"] == "time"))
+      {
+        // Forward to IotEdge
+        //Serial.println(F("[cmd get time received from Arduino]"));
+        String response = Request2SocketServer(jsonMsg);
+        Serial.print(F("[Response forwarded to Arduino: ")); Serial.println(response);
+        serial2Arduino.print(response);
       }
-      if(doc["d1"] == "ultrason") {
-        if(doc["d2"] == "true") {
-          Serial.println("Ultrasonic_enabled = true;");
-          //Ultrasonic_enabled = true;
+      else if (doc["type"] == "telemetry" ) {
+        //{"device":"ElegooTank","type":"telemetry","time":"tbc","sensor":"battery","data":4.70}
+        //-------- Send telemetry to iotHub -----------
+        int str_len = jsonMsg.length() + 1;
+        char char_array[str_len]; // Prepare the character array (the buffer)
+        jsonMsg.toCharArray(char_array, str_len);
+        if(mqttClient.publish(topic_data, char_array)){
+          Serial.println(F("[Telemetry mqttClient.publish ok]"));
         } else {
-          Serial.println("Ultrasonic_enabled = false;");
-          //Ultrasonic_enabled = false;
+          Serial.println(F("[mqttClient.publish failed]"));
+          // It will return false if:
+          //    the client was not currently connected to the server, or
+          //    the resulting MQTT packet to exceeded the libraries maximum packet size
         }
+        //-------- Update twin reported property -------------
+        // get the JsonObject in the JsonDocument
+        JsonObject root = doc.as<JsonObject>();
+        setTwinProperty(root["sensor"], doc["data"]);
+      } else if (doc["type"] == "status" ) {
+        JsonObject root = doc.as<JsonObject>();
+        setTwinProperty(root["prop"], root["data"]);
+      } else {
+        Serial.println(F("[Arduino unknown message type]"));
       }
+
     }
-    else if(doc["cmd"] == "get")
-    {
-      if(doc["d1"] == "battery") {
-        Serial.println((reinterpret_cast<const __FlashStringHelper *>(
-# 150 "/home/equipe2/BrasRobot/Arduino/Arduino.ino" 3
-                      (__extension__({static const char __c[] __attribute__((__progmem__)) = (
-# 150 "/home/equipe2/BrasRobot/Arduino/Arduino.ino"
-                      "$Get battery received"
-# 150 "/home/equipe2/BrasRobot/Arduino/Arduino.ino" 3
-                      ); &__c[0];}))
-# 150 "/home/equipe2/BrasRobot/Arduino/Arduino.ino"
-                      )));
-        //SensorDataUpdate(battery, true);
-      } else if(doc["d1"] == "ultrason") {
-        Serial.println((reinterpret_cast<const __FlashStringHelper *>(
-# 153 "/home/equipe2/BrasRobot/Arduino/Arduino.ino" 3
-                      (__extension__({static const char __c[] __attribute__((__progmem__)) = (
-# 153 "/home/equipe2/BrasRobot/Arduino/Arduino.ino"
-                      "$Get ultrason received"
-# 153 "/home/equipe2/BrasRobot/Arduino/Arduino.ino" 3
-                      ); &__c[0];}))
-# 153 "/home/equipe2/BrasRobot/Arduino/Arduino.ino"
-                      )));
-        //SensorDataUpdate(ultrason, true);
-      } else if(doc["d1"] == "status") {
-        Serial.println((reinterpret_cast<const __FlashStringHelper *>(
-# 156 "/home/equipe2/BrasRobot/Arduino/Arduino.ino" 3
-                      (__extension__({static const char __c[] __attribute__((__progmem__)) = (
-# 156 "/home/equipe2/BrasRobot/Arduino/Arduino.ino"
-                      "$Get status received"
-# 156 "/home/equipe2/BrasRobot/Arduino/Arduino.ino" 3
-                      ); &__c[0];}))
-# 156 "/home/equipe2/BrasRobot/Arduino/Arduino.ino"
-                      )));
-        //SensorDataUpdate(ultrason, true);
-        // gcadet to finish
-      }
+    //Serial.println(jsonMsg);         // Send command reponse to socket client
     }
-    else if(doc["cmd"] == "s1") // Servo moteur cmd
-    {
-      //tankStatus.Functional_Mode = CMD_ServoControl; 
-      //CMD_ServoSelection = doc["d1"];
-      //CMD_Servo_angle = doc["d2"];
-      Serial.println("$ok");
-    }
-    else if(doc["cmd"] == "s2")
-    {
-      uint8_t temp_Set_Servo = doc["d1"];
-      Serial.println(temp_Set_Servo);
-      Serial.println("$ok");
-      //ServoStepMove(temp_Set_Servo);
-    }
-    else if(doc["cmd"] == "m1")
-    {
-      //tankStatus.Functional_Mode = CMD_MotorControl; 
-      //CMD_MotorSelection = doc["d1"];
-      //CMD_MotorSpeed = doc["d2"];
-      //CMD_MotorDirection = doc["d3"];
-      Serial.println("$ok");
-    }
-    else if(doc["cmd"] == "led")
-    {
-      //CMD_ledMode = doc["d1"];
-      /*
-      switch (CMD_ledMode) {
-        case 1:
-          //DriverLedRGB.Set(CRGB::Green, LED_BLINK, CRGB::Black, 500, 500);
-          break;
-        case 2:
-          //DriverLedRGB.Set(CRGB::Red, LED_BLINK, CRGB::Black, 500, 500);
-          break;
-        case 3:
-          //DriverLedRGB.Set(CRGB::Red, LED_BLINK, CRGB::Black, 100, 900);
-          break;
-        case 4:
-          //DriverLedRGB.Set(CRGB::Violet, LED_BLINK, CRGB::Yellow, 1000, 1000);
-          break;   
-        case 5:
-          //DriverLedRGB.Set(CRGB::Orange, LED_BRIGHT, CRGB::Orange, 1000, 1000);
-          break;    
-        case 6:
-          //DriverLedRGB.Set(CRGB::Brown, LED_FIX, CRGB::Orange, 1000, 1000);
-          break;
-        default:
-          //DriverLedRGB.Set(CRGB::Black, LED_FIX, CRGB::Black, 500, 0); // off & no blink
-          break;
-          
-      }*/
-      Serial.println("$ok");
-    }
-    else
-    {
-      const char *cmd = "xxxxxxxxxx";
-      cmd = doc["cmd"];
-      Serial.print("$Unknown cmd: ");Serial.println(cmd);
-    }
-  }
-  else {
-    Serial.println("$Error: Json deserialize");
-  }
+  */
 }
 
-void Display_LimitSwitch()
+
+// Transform strign to json message and publish it to broker
+void publishErrorMsg(char* errMsg)
 {
-  char buf[64];
-  sprintf(buf, "{\"msg\":\"limit socle: %d\"}", digitalRead(11));
-  Serial.println(buf);
-  sprintf(buf, "{\"msg\":\"limit hauteur: %d\"}", digitalRead(10));
-  Serial.println(buf);
-  sprintf(buf, "{\"msg\":\"limit coude: %d\"}", digitalRead(9));
-  Serial.println(buf);
-  sprintf(buf, "{\"msg\":\"limit rot pince: %d\"}", digitalRead(A3));
-  Serial.println(buf);
-
+  char jsonMsg[128];
+  strcpy(jsonMsg, "{""err"":""");
+  strcat(jsonMsg, errMsg);
+  strcat(jsonMsg, """}");
+  client.publish(topic_err, jsonMsg);
 }
 
+void publishJsonMsg(char* msg)
+{
+  char jsonMsg[128];
+  strcpy(jsonMsg, "{""msg"":""");
+  strcat(jsonMsg, msg);
+  strcat(jsonMsg, """}");
+  client.publish(topic_msg, jsonMsg);
+}
+
+
+//==================================================================================
 void setup() {
+
   Serial.begin(9600);
-  Serial.println("{\"msg\" : \"============================================================================\"}");
-  Serial.println("{\"msg\" : \"Programme de controle du Bras Robot selon une commande recue en wifi\"}");
-  Serial.println("{\"msg\" : \"Date de creation : 25/03/2023\"}");
-  Serial.println("{\"msg\" : \"Date de modification : 13/05/2023\"}");
-  Serial.println("{\"msg\" : \"Modification effectuee : \"}");
-  Serial.println("{\"msg\" : \"Auteur : Groupe\"}");
-  Serial.println("{\"msg\" : \"============================================================================\"}");
 
-    while (Serial.read() >= 0)
-    {
-        /*Vider le cache du port série...*/
-    }
-  Init(); // Init all sensors 
-/*
-  #if defined(DEBUG)
-      Serial.println();
-      Serial.print(F()"Application name: ")); Serial.println(applicationName); 
-      Serial.print(F("  v")); Serial.println(appVersion);
-      Serial.print(F("  file name: ")); Serial.println(filename);
-      Serial.println(F("Starting in DEBUG mode.")); 
-  #endif
-  */
-  Serial.println("");
-  Display_LimitSwitch();
-  socle.setSpeed(500);
-  coude.setSpeed(500);
-  rot_pince.setSpeed(500);
-  hauteur.setSpeed(1500);
-
-
-
-
-  Serial.println("init socle");
-  while (digitalRead(11) !=1){
-   socle.step(-200);
+  if (true) {
+    Serial.print(applicationName); Serial.print(" v"); Serial.print(appVersion); Serial.print(" ("); Serial.print(filename); Serial.println(")");
+    // We start by connecting to a WiFi network
+    Serial.print(wifi_count, 10); Serial.println(((reinterpret_cast<const __FlashStringHelper *>(
+# 295 "/home/equipe2/BrasRobot/ESP01/ESP01.ino" 3
+                                                 (__extension__({static const char __pstr__[] __attribute__((__aligned__(4))) __attribute__((section( "\".irom0.pstr." "ESP01.ino" "." "295" "." "22" "\", \"aSM\", @progbits, 1 #"))) = (
+# 295 "/home/equipe2/BrasRobot/ESP01/ESP01.ino"
+                                                 " wifi networks"
+# 295 "/home/equipe2/BrasRobot/ESP01/ESP01.ino" 3
+                                                 ); &__pstr__[0];}))
+# 295 "/home/equipe2/BrasRobot/ESP01/ESP01.ino"
+                                                 ))));
   }
-  Display_LimitSwitch();
 
-  Serial.println("init coude");
-  while (digitalRead(9) !=1){
-   coude.step(-200);
+
+  wifi_connect();
+
+  if (true) {
+    Serial.println(((reinterpret_cast<const __FlashStringHelper *>(
+# 302 "/home/equipe2/BrasRobot/ESP01/ESP01.ino" 3
+                  (__extension__({static const char __pstr__[] __attribute__((__aligned__(4))) __attribute__((section( "\".irom0.pstr." "ESP01.ino" "." "302" "." "23" "\", \"aSM\", @progbits, 1 #"))) = (
+# 302 "/home/equipe2/BrasRobot/ESP01/ESP01.ino"
+                  "Connected to the WiFi network"
+# 302 "/home/equipe2/BrasRobot/ESP01/ESP01.ino" 3
+                  ); &__pstr__[0];}))
+# 302 "/home/equipe2/BrasRobot/ESP01/ESP01.ino"
+                  ))));
+    Serial.print(((reinterpret_cast<const __FlashStringHelper *>(
+# 303 "/home/equipe2/BrasRobot/ESP01/ESP01.ino" 3
+                (__extension__({static const char __pstr__[] __attribute__((__aligned__(4))) __attribute__((section( "\".irom0.pstr." "ESP01.ino" "." "303" "." "24" "\", \"aSM\", @progbits, 1 #"))) = (
+# 303 "/home/equipe2/BrasRobot/ESP01/ESP01.ino"
+                "IP address: "
+# 303 "/home/equipe2/BrasRobot/ESP01/ESP01.ino" 3
+                ); &__pstr__[0];}))
+# 303 "/home/equipe2/BrasRobot/ESP01/ESP01.ino"
+                )))); Serial.println(WiFi.localIP());
   }
-  Display_LimitSwitch();
 
-  Serial.println("init pince");
-  while (digitalRead(A3) !=1){
-   rot_pince.step(-200);
-  }
-  Display_LimitSwitch();
+  msgBuffer[0] = '\0'; // Empty Arduino message buffer
 
-  Serial.println("init hauteur");
-  while (digitalRead(10) !=1){
-   hauteur.step(+200);
-  }
-  Display_LimitSwitch();
- }
+  //------------ connecting to a mqtt broker -------------------
+  client.setServer(mqtt_broker, mqtt_port);
+  client.setCallback(callback);
 
+  client.publish(topic_esp01, "Hello from ESP-01");
+  // Led
+  //flasher.begin(LED_PIN);
+  //flasher.flash(5);
+}
+
+
+
+//==================================================================================
 void loop() {
-/*  
-  // step one revolution  in one direction:
-  Serial.println("sens des aiguilles d'une montre");
-  coude.step(Tour_10);
-  delay(1000);
+  if (WiFiMulti.run() != WL_CONNECTED) {
+    wifi_connect();
+  }
+  if (!client.connected()) {
+    reconnect_MQTT();
+  }
+  client.loop();
 
-  // step one revolution in the other direction:
-  Serial.println("sens inverse des aiguilles d'une montre");
-  coude.step(-Tour_10);
-  delay(1000);
+  //flasher.update();   // should call this often, atleast every loop()
+
+  // Get and process messages from Arduino
+  if (GetJsonMsgFromArduino()) {
+    ProcessJsonMsgFromArduino(msgBuffer);
+    msgBuffer[0] = '\0';
+  }
+
+  /*
+    Send data to broker
+
+    char buffer[4];
+    DynamicJsonDocument doc(1024);
+    doc["sensor"] = "DHT11";
+    doc["time"]   = millis();
+
+    itoa((int)temperature, buffer, 10);
+    doc["temp"] = buffer;
+    itoa((int)humidity, buffer, 10);
+    doc["humidity"] = buffer;
+
+    serializeJson(doc, msg);
+
+    //int temp = 25;
+    //snprintf (msg, MSG_BUFFER_SIZE, "{ temp: %ld }", temp);
+    client.publish(topic_data, msg);
+
+    // DHT11 sampling rate is 1HZ.
+
   */
-    SerialMsgReceived = SerialPortJsonReception(); // Read incoming command from serial port
 
-
-    if (SerialMsgReceived.length() > 0) {
-
-        Serial.print("to be processed:"); Serial.println(SerialMsgReceived);
-
-        SerialPortMsgProcessing(SerialMsgReceived);
-    }
 }

@@ -11,3 +11,7 @@ Module Wifi :
     Fil Noir Ground,
     Fil Jaune RX,
     Fil Vert TX
+
+Commande :
+    cmd-ordre-val-sens          ordre de mouvement d'un moteur
+    {"cmd":"m1","ordre":"move","val":1000,"sens":1}

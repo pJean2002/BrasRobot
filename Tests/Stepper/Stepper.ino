@@ -5,7 +5,7 @@
 #define limitSwitch3 9
 #define limitSwitch4 A3
 
-Stepper PasPas = Stepper(200,4,7);
+Stepper PasPas = Stepper(200,3,6);
 
 void setup()
 {
@@ -15,8 +15,8 @@ void setup()
 
 void loop()
 {
-	PasPas.step(0);
+	PasPas.step(200);
     delay(1000);
-    PasPas.step(0);
+    PasPas.step(-200);
     delay(1000);
 }

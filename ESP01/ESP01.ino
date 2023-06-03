@@ -133,8 +133,8 @@ void reconnect_MQTT() {
 //
 void callback(char *topic, byte * payload, unsigned int length) {
   if (TEST) {
-    client.publish(topic_esp01, "Message received with topic: ");
-    client.publish(topic_esp01, topic);
+    //client.publish(topic_esp01, "Message received with topic: ");
+    //client.publish(topic_esp01, topic);
     //    client.publish(topic_esp01,"Message:"));
   }
 

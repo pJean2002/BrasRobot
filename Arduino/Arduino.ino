@@ -118,43 +118,13 @@ void SerialPortMsgProcessing(String jsonMsg)
 
   if (!error) // Vérifier que la désérialisation a réussi
   {
-    //char *cmdReceived = doc["cmd"];
-    //char *temp = doc["H"];
-    //CommandSerialNumber = temp; // Obtient le numéro de séquence de la nouvelle commande
-    if(doc["cmd"] == "")
+    if(doc["cmd"] == "get")
     {
-      if(doc["d1"] == "time") {
-        /*strcpy(currentDateTime, doc["d2"]);
-        Serial.println(currentDateTime); // Debug logging
-        hh = atoi(&currentDateTime[11]);
-        mm = atoi(&currentDateTime[14]);
-        ss = atoi(&currentDateTime[17]);
-        //Serial.println(hh);
-        //Serial.println(mm);
-        //Serial.println(ss);
-        */
-      }
-      if(doc["d1"] == "ultrason") {
-        if(doc["d2"] == "true") {
-          Serial.println("Ultrasonic_enabled = true;");
-          //Ultrasonic_enabled = true;
-        } else {
-          Serial.println("Ultrasonic_enabled = false;");
-          //Ultrasonic_enabled = false;
-        }
-      }
-    }
-    else if(doc["cmd"] == "get")
-    {
-      if(doc["d1"] == "battery") {
-        Serial.println(F("$Get battery received"));
-        //SensorDataUpdate(battery, true);
-      } else if(doc["d1"] == "ultrason") {
-        Serial.println(F("$Get ultrason received"));
-        //SensorDataUpdate(ultrason, true);
-      } else if(doc["d1"] == "status") {
-        Serial.println(F("$Get status received"));
-        //SensorDataUpdate(ultrason, true);
+      if(doc["d1"] == "angle") 
+      {
+        Serial.println("{\"log\" : \" Commande de demande d'angle des moteurs recue\"}");
+        //Serial.println("{\"msg\" : \" Angle du moteur du socle" + socle.read() + "\"}");
+        Serial.println("{\"log\" : \" Angle des Moteurs lu et envoyés\"}");
         // gcadet to finish
       }
     }
@@ -165,66 +135,48 @@ void SerialPortMsgProcessing(String jsonMsg)
       //CMD_Servo_angle = doc["d2"];
       Serial.println("{\"log\" : \" Commande de pince recue\"}");
     }
+    
     else if(doc["cmd"] == "m1")
     {
-      //tankStatus.Functional_Mode = CMD_MotorControl; 
-      //CMD_MotorSelection = doc["d1"];
-      //CMD_MotorSpeed = doc["d2"];
-      //CMD_MotorDirection = doc["d3"];
       Serial.println("{\"log\" : \" Commande de moteur de coude recue\"}");
+      if(doc["ordre"]=="move")
+      {
+        Serial.println("{\"log\" : \" Commande de mouvement recue\"}");
+        int NbrPas=doc["val"];
+        int Sens=doc["sens"];
+        socle.step(NbrPas*Sens);
+      }
     }
     else if(doc["cmd"] == "m2")
     {
-      //tankStatus.Functional_Mode = CMD_MotorControl; 
-      //CMD_MotorSelection = doc["d1"];
-      //CMD_MotorSpeed = doc["d2"];
-      //CMD_MotorDirection = doc["d3"];
       Serial.println("{\"log\" : \" Commande de moteur de poignet recue\"}");
+      if(doc["ordre"]=="move")
+      {
+        Serial.println("{\"log\" : \" Commande de mouvement recue\"}");
+        //coude.step(doc["val"]*doc["sens"]);
+      }
     }
     else if(doc["cmd"] == "m3")
     {
-      //tankStatus.Functional_Mode = CMD_MotorControl; 
-      //CMD_MotorSelection = doc["d1"];
-      //CMD_MotorSpeed = doc["d2"];
-      //CMD_MotorDirection = doc["d3"];
       Serial.println("{\"log\" : \" Commande de moteur d'axe Z recue\"}");
+      if(doc["ordre"]=="move")
+      {
+        Serial.println("{\"log\" : \" Commande de mouvement recue\"}");
+        //coude.step(doc["val"]*doc["sens"]);
+      }
     }
     else if(doc["cmd"] == "m4")
     {
-      //tankStatus.Functional_Mode = CMD_MotorControl; 
-      //CMD_MotorSelection = doc["d1"];
-      //CMD_MotorSpeed = doc["d2"];
-      //CMD_MotorDirection = doc["d3"];
       Serial.println("{\"log\" : \" Commande de moteur d'epaule recue\"}");
+      if(doc["ordre"]=="move")
+      {
+        Serial.println("{\"log\" : \" Commande de mouvement recue\"}");
+        //coude.step(doc["val"]*doc["sens"]);
+      }
     }  
     else if(doc["cmd"] == "led")
     {
       //CMD_ledMode = doc["d1"];
-      /*
-      switch (CMD_ledMode) {
-        case 1:
-          //DriverLedRGB.Set(CRGB::Green, LED_BLINK, CRGB::Black, 500, 500);
-          break;
-        case 2:
-          //DriverLedRGB.Set(CRGB::Red, LED_BLINK, CRGB::Black, 500, 500);
-          break;
-        case 3:
-          //DriverLedRGB.Set(CRGB::Red, LED_BLINK, CRGB::Black, 100, 900);
-          break;
-        case 4:
-          //DriverLedRGB.Set(CRGB::Violet, LED_BLINK, CRGB::Yellow, 1000, 1000);
-          break;   
-        case 5:
-          //DriverLedRGB.Set(CRGB::Orange, LED_BRIGHT, CRGB::Orange, 1000, 1000);
-          break;    
-        case 6:
-          //DriverLedRGB.Set(CRGB::Brown, LED_FIX, CRGB::Orange, 1000, 1000);
-          break;
-        default:
-          //DriverLedRGB.Set(CRGB::Black, LED_FIX, CRGB::Black, 500, 0); // off & no blink
-          break;
-          
-      }*/
       Serial.println("$ok");
     } 
     else 
@@ -325,8 +277,6 @@ void loop() {
   delay(1000);
   */
     SerialMsgReceived = SerialPortJsonReception();  // Read incoming command from serial port
-   
-    
     if (SerialMsgReceived.length() > 0) { 
       #if defined(DEBUG)
         Serial.print("to be processed:"); Serial.println(SerialMsgReceived);
@@ -334,5 +284,3 @@ void loop() {
         SerialPortMsgProcessing(SerialMsgReceived);
     }
 }
-
-
